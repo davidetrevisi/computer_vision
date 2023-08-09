@@ -295,6 +295,31 @@ int BagOfVisualWords::predictImage(const string& file_path) {
     return 0;
 }
 
+int BagOfVisualWords::predictImage(const cv::Mat& image) {
+    if (image.data == NULL) {
+        cout << "[ERROR] Cannot open the image!" << endl;
+        return -1;
+    }
+
+    static Ptr<SIFT> sift = SIFT::create();
+
+    cout << "Predicting the image..." << endl;
+
+    Mat image_grayscale;
+    vector<KeyPoint> keypoints;
+    Mat descriptors;
+
+    cvtColor(image, image_grayscale, COLOR_BGR2GRAY);
+    sift->detectAndCompute(image_grayscale, noArray(), keypoints, descriptors);
+
+    Mat hist = findHistogram(descriptors);
+    float prediction = svm_->predict(hist);
+
+    cout << "The image is classified as: " << prediction << endl;
+
+    return prediction;
+}
+
 int BagOfVisualWords::runFullPipeline() {
     processImages();
     kMeansClustering();

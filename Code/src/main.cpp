@@ -1,5 +1,7 @@
 #include "bag_of_visual_words.hpp"
 
+#include <opencv2/highgui.hpp>
+
 using namespace std;
 using namespace cv;
 
@@ -22,10 +24,10 @@ int main(int argc, char** argv)
     BagOfVisualWords bovw = BagOfVisualWords();
 
     //bovw.processImages();
-    bovw.importKMeans();
+    //bovw.importKMeans();
     //bovw.trainSVM();
-    bovw.importSVM();
-    bovw.predictImage("../Test/insalata.png");
+    //bovw.importSVM();
+    //bovw.predictImage("../Test/insalata.png");
 
     return (0);
 }

@@ -31,6 +31,7 @@ class BagOfVisualWords
         int trainSVM(const std::string& file_path = "../svm_model.yml");
         int importSVM(const std::string& file_path = "../svm_model.yml");
         int predictImage(const std::string& file_path);
+        int predictImage(const cv::Mat& image);
         int processImages();
         int runFullPipeline();
 };
