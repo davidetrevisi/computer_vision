@@ -1,4 +1,4 @@
-#include "bag_of_visual_words.hpp"
+#include "evaluation_metrics.hpp"
 
 #include <opencv2/highgui.hpp>
 
@@ -7,27 +7,23 @@ using namespace cv;
 
 int main(int argc, char** argv)
 {
-    /*processImagesClass("grilled_pork_cutlet", 102, 6);
-    processImagesClass("fish_cutlet", 90, 7);
-    processImagesClass("beans", 98, 10);
-    processImagesClass("salad", 114, 12);
-    processImagesClass("bread", 108, 13);
-    processImagesClass("basil_potatoes", 98, 11);
-    processImagesClass("pasta_with_pesto", 115, 1);
-    processImagesClass("rabbit", 104, 8);
-    processImagesClass("pasta_with_tomato_sauce", 96, 2);
-    processImagesClass("pilaw_rice_with_peppers_and_peas", 100, 5);
-    processImagesClass("pasta_with_clams_and_mussels", 120, 4);
-    processImagesClass("pasta_with_meat_sauce", 134, 3);
-    processImagesClass("seafood_salad", 108, 9);*/
+    EvaluationMetrics evaluation_metrics = EvaluationMetrics();
 
-    BagOfVisualWords bovw = BagOfVisualWords();
+    evaluation_metrics.players.push_back(Player(360, 424, 103, 237, 1, 0.67));
+    evaluation_metrics.players.push_back(Player(445, 75, 111, 197, 1, 0.67));
 
-    //bovw.processImages();
-    //bovw.importKMeans();
-    //bovw.trainSVM();
-    //bovw.importSVM();
-    //bovw.predictImage("../Test/insalata.png");
+    evaluation_metrics.initializePlayersGroundTruth();
+
+    float res_1 = evaluation_metrics.meanAveragePrecision(1);
+    float res_2 = evaluation_metrics.meanAveragePrecision(2);
+
+    if (res_1 < res_2) {
+        // MEAN AVERAGE PRECISION IS RES_1
+    } else {
+        // MEAN AVERAGE PRECISION IS RES_2
+    }
+
+    float iou_1 = evaluation_metrics.initializeSegmentationGroundTruth("im1_bin.png", 1, 2);
 
     return (0);
 }
