@@ -298,7 +298,7 @@ void Segmentation::addSegmentedClass(cv::Mat& image) {
     //cv::waitKey(0);
 }
 
-cv::Mat Segmentation::finalImage(cv::Mat& bb_image) {
+void Segmentation::finalImage(cv::Mat& bb_image) {
     cv::Mat background;
 
     cv::cvtColor(bb_image, background, COLOR_BGR2BGRA);
@@ -345,6 +345,4 @@ cv::Mat Segmentation::finalImage(cv::Mat& bb_image) {
     //cv::namedWindow("Coloured segmented image", WINDOW_NORMAL);
     cv::imshow("Program output", output);
     cv::waitKey(0);
-
-    return output;
 }

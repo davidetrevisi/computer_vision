@@ -3,6 +3,9 @@
 using namespace std;
 using namespace cv;
 
+/*
+    Default constructor for the class
+*/
 EvaluationMetrics::EvaluationMetrics() {
     file_path = "../Datasets/Testing/Masks/";
     iou_threshold = 0.5f;
@@ -16,6 +19,9 @@ EvaluationMetrics::EvaluationMetrics() {
     players.clear();
 }
 
+/*
+    Function that sets the variable to default value
+*/
 void EvaluationMetrics::reset() {
     file_path = "../Datasets/Testing/Masks/";
     iou_threshold = 0.5f;
@@ -29,6 +35,11 @@ void EvaluationMetrics::reset() {
     players.clear();
 }
 
+/*
+    Function that computes the distance between two rectangles,
+    used to associate each bounding box from the ground truth to
+    its closest one found
+*/
 float EvaluationMetrics::rectangleDistance(const int a_1, const int b_1, const int c_1, const int d_1, const int a_2, const int b_2, const int c_2, const int d_2) {
     float center_1_x = (float)(a_1 + c_1) / 2.0f;
     float center_1_y = (float)(b_1 + d_1) / 2.0f;
@@ -44,9 +55,13 @@ float EvaluationMetrics::rectangleDistance(const int a_1, const int b_1, const i
     return distance;
 }
 
+/*
+    Function that initializes the bounding box ground truth by
+    reading the file and computing the distance between them.
+    The boxes with minimum distance between each other are found
+*/
 void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
     std::ifstream bb_file;
-    //bb_file.open(file_path + file_name);
     bb_file.open(file_name);
 
     vector<int> data;
@@ -64,11 +79,16 @@ void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
     int index = 0;
     float min_distance_value;
 
+    // Cycle through all the players
     for (int p = 0; p < players.size(); p++) {
         if (p > ground_truth_size) {
+            // If we find more players than the ground truth,
+            // it means that some are left out by default
             players[p].ground_truth = BoundingBox();
         }
         else {
+            // Assign a minimum distance value and improve it
+            // by going through all the remaining bounding boxes
             index = 0;
             min_distance_value = 1000;
             bb_temp = BoundingBox();
@@ -83,6 +103,9 @@ void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
                     min_distance_value = distance;
                 }
             }
+            // At the end assign the player to the bounding
+            // box with minimum distance
+
             // cout << data.size() << " " << index << endl;
             players[p].ground_truth = bb_temp;
             data.erase(data.begin() + index, data.begin() + index + 5);
@@ -90,6 +113,10 @@ void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
     }
 }
 
+/*
+    Function that switches the player classes for
+    the bounding box metric
+*/
 void EvaluationMetrics::reversePlayers() {
     for (int p = 0; p < players.size(); p++) {
         if (players[p].bounding_box.bb_teamid == CLASS_TEAM_1) {
@@ -101,6 +128,10 @@ void EvaluationMetrics::reversePlayers() {
     }
 }
 
+/*
+    Function that computes the average precision given
+    a set of values
+*/
 float EvaluationMetrics::averagePrecision(const vector<float>& precision_values) {
     float sum = 0;
 
@@ -119,6 +150,10 @@ float EvaluationMetrics::averagePrecision(const vector<float>& precision_values)
     return average_precision;
 }
 
+/*
+    Function that computes the precision and recall values
+    given the IOU threshold of 0.5
+*/
 void EvaluationMetrics::computePrecisionRecall() {
     cumulative_fp = 0;
     cumulative_tp = 0;
@@ -140,6 +175,10 @@ void EvaluationMetrics::computePrecisionRecall() {
     }
 }
 
+/*
+    Function that computes the precision values for each player:
+    it basically applies the formula from the given documentation
+*/
 float EvaluationMetrics::meanAveragePrecision(const int team) {
     vector<float> precision_values;
     float current_max;
@@ -147,6 +186,7 @@ float EvaluationMetrics::meanAveragePrecision(const int team) {
 
     for (int i = 0; i < players.size(); i++) {
         if (players[i].bounding_box.bb_teamid == team) {
+            // Check if we have more than one precision value for the same recall
             if (players[i].recall == recall_flag) {
                 continue;
             }
@@ -156,6 +196,7 @@ float EvaluationMetrics::meanAveragePrecision(const int team) {
 
             current_max = players[i].precision;
 
+            // Analyze all the following players to find the maximum
             for (int j = i; j < players.size(); j++) {
                 if (players[j].bounding_box.bb_teamid == team) {
                     if (players[i].recall == players[j].recall && players[i].precision > players[j].precision) {
@@ -170,6 +211,7 @@ float EvaluationMetrics::meanAveragePrecision(const int team) {
                 }
             }
 
+            // Save the value
             if (recall_flag == 0)
             {
                 //cout << "Max 1: " << current_max << " i: " << i << endl;
@@ -188,15 +230,22 @@ float EvaluationMetrics::meanAveragePrecision(const int team) {
         }
     }
 
+    // Compute the metric
     return averagePrecision(precision_values);
 }
 
+/*
+    Function that executes the whole pipeline for the
+    MAP result
+*/
 void EvaluationMetrics::meanAveragePrecisionPipeline(const string& file_name) {
-    cout << file_name << endl;
+    //cout << file_name << endl;
     initializePlayersGroundTruth(file_name);
 
     computePrecisionRecall();
 
+    // Compute the average precision for the two teams, then swap them
+    // and find if the results improve
     float res_1 = meanAveragePrecision(CLASS_TEAM_1);
     float res_2 = meanAveragePrecision(CLASS_TEAM_2);
 
@@ -216,6 +265,7 @@ void EvaluationMetrics::meanAveragePrecisionPipeline(const string& file_name) {
     cout << "Average precision team 2: " << res_2 << endl;
     cout << "Mean average precision: " << mean_average_precision_reverse << endl;
 
+    // Print the final result
     if (mean_average_precision > mean_average_precision_reverse) {
         std::cout << "Final mean average precision: " << mean_average_precision << std::endl;
         reversePlayers();
@@ -225,9 +275,17 @@ void EvaluationMetrics::meanAveragePrecisionPipeline(const string& file_name) {
     }
 }
 
+/*
+    Function that initializes the segmentation ground truth by
+    reading the file and counting the pixels
+*/
 void EvaluationMetrics::initializeSegmentationGroundTruth(const std::string& file_name) {
-    //Mat segmentation_ground_truth = imread(file_path + file_name);
     segmentation_ground_truth = imread(file_name, COLOR_BGR2GRAY);
+
+    if (segmentation_ground_truth.empty()) {
+            std::cerr << "[ERROR] Could not read the segmented ground truth!" << std::endl;
+            exit(1);
+        }
 
     for (int i = 0; i < segmentation_ground_truth.rows; i++) {
         for (int j = 0; j < segmentation_ground_truth.cols; j++) {
@@ -247,6 +305,10 @@ void EvaluationMetrics::initializeSegmentationGroundTruth(const std::string& fil
     }
 }
 
+/*
+    Function that switches the player classes for
+    the segmentation metric
+*/
 void EvaluationMetrics::reverseSegmentation(Mat& mask) {
     for (int i = 0; i < mask.rows; i++) {
         for (int j = 0; j < mask.cols; j++) {
@@ -260,12 +322,17 @@ void EvaluationMetrics::reverseSegmentation(Mat& mask) {
     }
 }
 
+/*
+    Function that counts the number of pixels belonging
+    to each class and computes the Mean IOU metric
+*/
 float EvaluationMetrics::intersectionOverUnion(const Mat& mask) {
     int intersection_background = 0, segmented_background = 0;
     int intersection_team_1 = 0, segmented_team_1 = 0;
     int intersection_team_2 = 0, segmented_team_2 = 0;
     int intersection_field = 0, segmented_field = 0;
 
+    // Count the intersection pixels
     for (int i = 0; i < segmentation_ground_truth.rows; i++) {
         for (int j = 0; j < segmentation_ground_truth.cols; j++) {
             if (segmentation_ground_truth.at<uchar>(i, j) == CLASS_BACKGROUND) {
@@ -293,6 +360,7 @@ float EvaluationMetrics::intersectionOverUnion(const Mat& mask) {
         }
     }
 
+    // Count the segmented pixels
     for (int i = 0; i < mask.rows; i++) {
         for (int j = 0; j < mask.cols; j++) {
             if (mask.at<uchar>(i, j) == CLASS_BACKGROUND) {
@@ -310,6 +378,8 @@ float EvaluationMetrics::intersectionOverUnion(const Mat& mask) {
         }
     }
 
+    // Compute the IOU and Mean IOU
+
     //cout << intersection_background << " " << segmented_background << " " << gt_background << endl;
     float iou_background = (float)intersection_background / ((segmented_background + gt_background) - intersection_background);
     float iou_team_1 = (float)intersection_team_1 / ((segmented_team_1 + gt_team_1) - intersection_team_1);
@@ -318,18 +388,23 @@ float EvaluationMetrics::intersectionOverUnion(const Mat& mask) {
 
     float mean_iou = (1.0f / 4.0f) * (iou_background + iou_team_1 + iou_team_2 + iou_field);
     return mean_iou;
-
-    return 0;
 }
 
+/*
+    Function that executes the whole pipeline for the
+    Mean IOU result
+*/
 void EvaluationMetrics::segmentationPipeline(const std::string& file_name, cv::Mat& segmented_image) {
     initializeSegmentationGroundTruth(file_name);
 
+    // Compute the IOU
     float res_1_iou = intersectionOverUnion(segmented_image);
     std::cout << "Intersection Over Union first try: " << res_1_iou << std::endl;
 
+    // Switch the classes
     reverseSegmentation(segmented_image);
 
+    // Compute the IOU again and choose the best one
     float res_2_iou = intersectionOverUnion(segmented_image);
     std::cout << "Intersection Over Union swapped: " << res_2_iou << std::endl;
 

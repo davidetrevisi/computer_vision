@@ -48,7 +48,7 @@ class Segmentation
         void addPlayer(cv::Mat& image, BoundingBox& bb);
         void teamId(const int index = 0);
         void addSegmentedClass(cv::Mat& image);
-        cv::Mat finalImage(cv::Mat& bb_image);
+        void finalImage(cv::Mat& bb_image);
 };
 
 #endif
