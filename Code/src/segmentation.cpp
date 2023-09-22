@@ -211,7 +211,7 @@ void Segmentation::addPlayerClass() {
 
         //cout << cropped.rows << " " << cropped.cols << " " << player_colors[p].first.bb_width << endl;
 
-        if (player_colors[p].first.bb_teamid == 1) {
+        if (player_colors[p].first.bb_teamid == CLASS_TEAM_1) {
             for (int i = 0; i < cropped.rows; i++) {
                 for (int j = 0; j < cropped.cols; j++) {
                     if (cropped.at<uchar>(i, j) == 10 + p) {
@@ -220,7 +220,7 @@ void Segmentation::addPlayerClass() {
                 }
             }
         }
-        else if (player_colors[p].first.bb_teamid == 2) {
+        else if (player_colors[p].first.bb_teamid == CLASS_TEAM_2) {
             for (int i = 0; i < cropped.rows; i++) {
                 for (int j = 0; j < cropped.cols; j++) {
                     if (cropped.at<uchar>(i, j) == 10 + p) {
@@ -268,7 +268,7 @@ void Segmentation::teamId(const int index) {
                 team_2_color = player_colors[i].second;
                 flag = false;
             }
-            player_colors[i].first.bb_teamid = CLASS_TEAM_1;
+            player_colors[i].first.bb_teamid = CLASS_TEAM_2;
         }
     }
 
