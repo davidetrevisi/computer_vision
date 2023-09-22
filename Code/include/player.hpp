@@ -13,9 +13,9 @@ class Player
 {
     public:
         BoundingBox ground_truth, bounding_box;
-        float confidence, intersection_over_union, precision, recall;
+        float intersection_over_union, precision, recall;
         Player();
-        Player(const int bb_x, const int bb_y, const int bb_width, const int bb_height, const int bb_teamid, const float confidence);
+        Player(BoundingBox& bb);
         bool intersectionOverUnion(const float iou_threshold);
 };
 

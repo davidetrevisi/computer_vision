@@ -5,12 +5,10 @@ using namespace cv;
 
 Player::Player() {
     bounding_box = BoundingBox();
-    this->confidence = 0;
 }
 
-Player::Player(const int bb_x, const int bb_y, const int bb_width, const int bb_height, const int bb_teamid, const float confidence) {
-    bounding_box = BoundingBox(bb_x, bb_y, bb_width, bb_height, bb_teamid);
-    this->confidence = confidence;
+Player::Player(BoundingBox& bb) {
+    bounding_box = bb;
 }
 
 bool Player::intersectionOverUnion(const float iou_threshold) {
@@ -21,6 +19,8 @@ bool Player::intersectionOverUnion(const float iou_threshold) {
     float rect_union = (rect_bb.area() + rect_gt.area()) - intersection.area();
 
     intersection_over_union = intersection.area() / rect_union;
+
+    //cout << "Rect: " << intersection_over_union << " " << rect_union << " " << intersection.area() << endl;
 
     if (intersection_over_union < iou_threshold) {
         return false;

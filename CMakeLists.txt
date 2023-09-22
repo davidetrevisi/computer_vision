@@ -6,6 +6,6 @@ find_package(OpenCV REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS} Code/include)
 
-add_executable(main Code/src/main.cpp Code/src/evaluation_metrics.cpp Code/src/player.cpp Code/src/bounding_box.cpp)
+add_executable(main Code/src/main.cpp Code/src/evaluation_metrics.cpp Code/src/player.cpp Code/src/bounding_box.cpp Code/src/segmentation.cpp Code/src/localization.cpp)
 
 target_link_libraries(main ${OpenCV_LIBS})
