@@ -56,7 +56,7 @@ void Localization::localization_function() {
 
     cout << "Numero di immagini da elaborare: " << images.size() << endl;
 
-    for (int j = 0; j < images.size(); j++) {
+    for (int j = 3; j < images.size(); j++) {
         // Initialize to default the parameters of the other classes
         // to avoid errors when processing multiple images
 
@@ -157,7 +157,7 @@ void Localization::crop_function(Mat& detection_image, Mat& detectionMat, Mat& i
         float confidence = detectionMat.at<float>(i, 2);
 
         // Check if the detection is of good quality
-        if (confidence > 0.4 && class_id == 0) { //class_id = 0 -> person
+        if (confidence > 0.5 && class_id == 0) { //class_id = 0 -> person
 
             //calcolo dei limiti delle bb
             int box_x = static_cast<int>(detectionMat.at<float>(i, 3) * image.cols);
@@ -180,7 +180,7 @@ void Localization::crop_function(Mat& detection_image, Mat& detectionMat, Mat& i
             Mat player = segmentation.playersSegmentationPipeline(image, background_mask, Rect(box_x, box_y, box_width, box_height));
 
             // Add the player to the image for the segmentation
-            BoundingBox bb = BoundingBox(box_x, box_y, box_width, box_height, 10 + i, confidence);
+            BoundingBox bb = BoundingBox(box_x, box_y, box_width, box_height, 10 + num - 1, confidence);
             segmentation.addPlayer(player, bb);
         }
     }

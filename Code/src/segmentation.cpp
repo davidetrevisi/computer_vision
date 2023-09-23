@@ -270,7 +270,10 @@ void Segmentation::addPlayerClass() {
         // Crop the image
         Mat cropped = segmented_image(Rect(player_colors[p].first.bb_x, player_colors[p].first.bb_y, player_colors[p].first.bb_width, player_colors[p].first.bb_height));
 
-        //cout << cropped.rows << " " << cropped.cols << " " << player_colors[p].first.bb_width << endl;
+        cv::imshow("Cropped", cropped);
+        cv::waitKey(0);
+
+        cout << "P: " << p << " size:" << player_colors.size() << endl;
 
         // Assign the corresponding color
         if (player_colors[p].first.bb_teamid == CLASS_TEAM_1) {
@@ -293,8 +296,8 @@ void Segmentation::addPlayerClass() {
         }
     }
     //cv::namedWindow("Seg", WINDOW_NORMAL);
-    //cv::imshow("Seg", segmented_image);
-    //cv::waitKey(0);
+    cv::imshow("Seg", segmented_image);
+    cv::waitKey(0);
 }
 
 /*
@@ -340,6 +343,7 @@ void Segmentation::teamId(const int index) {
             }
             player_colors[i].first.bb_teamid = CLASS_TEAM_2;
         }
+        cout << "Player " << i << " has color: " << player_colors[i].second << " and team: " << player_colors[i].first.bb_teamid << endl;
     }
 
     // Performs the same process again to make sure that
@@ -353,6 +357,7 @@ void Segmentation::teamId(const int index) {
                 player_colors[i].first.bb_teamid = 3;
             }
         }
+        cout << "Player " << i << " has color: " << player_colors[i].second << " and team: " << player_colors[i].first.bb_teamid << endl;
     }
 }
 
@@ -416,7 +421,7 @@ void Segmentation::finalImage(cv::Mat& bb_image) {
         }
     }
 
-    cv::namedWindow("Coloured segmented image", WINDOW_NORMAL);
+    cv::namedWindow("Coloured segmented image");
     cv::imshow("Coloured segmented image", bgr_segmentation);
     cv::waitKey(0);
 
@@ -428,7 +433,7 @@ void Segmentation::finalImage(cv::Mat& bb_image) {
     cv::Mat final_image;
     cv::cvtColor(finale, final_image, COLOR_BGRA2BGR);
 
-    cv::namedWindow("Program output", WINDOW_NORMAL);
+    cv::namedWindow("Program output");
     cv::imshow("Program output", final_image);
     cv::waitKey(0);
 }

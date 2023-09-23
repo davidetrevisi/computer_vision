@@ -17,7 +17,6 @@ EvaluationMetrics::EvaluationMetrics() {
     gt_field = 0;
 }
 
-
 /*
     Destructor for the class
 */
@@ -123,7 +122,7 @@ void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
             // cout << data.size() << " " << index << endl;
             players[p].ground_truth = bb_temp;
             cout << "Player: " << p << " bb_x: " << players[p].bounding_box.bb_x << " bb_y: " << players[p].bounding_box.bb_y << " bb_width: " << players[p].bounding_box.bb_width << " bb_height: " << players[p].bounding_box.bb_height << " has GT_x: " << players[p].ground_truth.bb_x << " GT_y: " << players[p].ground_truth.bb_y << " GT_width: " << players[p].ground_truth.bb_width << " GT_height: " << players[p].ground_truth.bb_height << endl;
-            
+
             // Remove the taken values from the array
             data[index] = 0;
             data[index + 1] = 0;
@@ -412,12 +411,15 @@ float EvaluationMetrics::intersectionOverUnion(const Mat& mask) {
     }
 
     // Compute the IOU and Mean IOU
-
-    //cout << intersection_background << " " << segmented_background << " " << gt_background << endl;
     float iou_background = (float)intersection_background / ((segmented_background + gt_background) - intersection_background);
     float iou_team_1 = (float)intersection_team_1 / ((segmented_team_1 + gt_team_1) - intersection_team_1);
     float iou_team_2 = (float)intersection_team_2 / ((segmented_team_2 + gt_team_2) - intersection_team_2);
     float iou_field = (float)intersection_field / ((segmented_field + gt_field) - intersection_field);
+
+    //cout << iou_background << " " << intersection_background << " " << segmented_background << " " << gt_background << endl;
+    //cout << iou_team_1 << " " << intersection_team_1 << " " << segmented_team_1 << " " << gt_team_1 << endl;
+    //cout << iou_team_2 << " " << intersection_team_2 << " " << segmented_team_2 << " " << gt_team_2 << endl;
+    //cout << iou_field << " " << intersection_field << " " << segmented_field << " " << gt_field << endl;
 
     float mean_iou = (1.0f / 4.0f) * (iou_background + iou_team_1 + iou_team_2 + iou_field);
     return mean_iou;
