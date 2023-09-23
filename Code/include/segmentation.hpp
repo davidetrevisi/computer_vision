@@ -33,13 +33,14 @@ class Segmentation
         std::vector<std::pair<BoundingBox, cv::Vec3b>> player_colors;
         float area;
         Segmentation();
+        ~Segmentation();
         void reset();
         cv::Mat3b quantize(cv::Mat3b& image, const int K);
         void getColors(cv::Mat3b& image);
         std::vector<std::pair<cv::Vec3b, int>> sortByCount();
         std::vector<cv::Vec3b> colorChoice();
-        cv::Mat backgroundMask(cv::Mat3b& image);
-        cv::Mat backgroundSegmentationPipeline(cv::Mat& image);
+        cv::Mat fieldMask(cv::Mat3b& image);
+        cv::Mat fieldSegmentationPipeline(cv::Mat& image);
         cv::Mat playerSegmentation(cv::Mat& image, cv::Rect r);
         cv::Mat removeBackground(cv::Mat& players, cv::Mat& background);
         cv::Mat playersSegmentationPipeline(cv::Mat& image, cv::Mat& background, cv::Rect bb);
@@ -47,7 +48,7 @@ class Segmentation
         void addPlayerClass();
         void addPlayer(cv::Mat& image, BoundingBox& bb);
         void teamId(const int index = 0);
-        void addSegmentedClass(cv::Mat& image);
+        void addFieldClass(cv::Mat& image);
         void finalImage(cv::Mat& bb_image);
 };
 

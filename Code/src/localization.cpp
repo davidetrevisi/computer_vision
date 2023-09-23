@@ -7,14 +7,21 @@ using namespace dnn;
 /*
     Default constructor for the class
 */
-Localization::Localization() {
+Localization::Localization()
+    : segmentation(Segmentation())
+    , evaluation_metrics(EvaluationMetrics())
+{
     // Initialize all the parameters and classes
-    segmentation = Segmentation();
-    evaluation_metrics = EvaluationMetrics();
     background_mask = Mat();
 
     pb = "../localization/model/frozen_graph.pb";
     pbt = "../localization/model/frozen_graph.pbtxt";
+}
+
+/*
+    Destructor for the class
+*/
+Localization::~Localization() {
 }
 
 /*
@@ -23,10 +30,11 @@ Localization::Localization() {
         - vector of paths to the files containing the bounding boxes ground truths
         - vector of paths to the files containing the segmentation ground truths
 */
-Localization::Localization(std::vector<cv::String>& images, std::vector<cv::String>& truths, std::vector<cv::String>& masks) {
+Localization::Localization(vector<String>& images, vector<String>& truths, vector<String>& masks)
+    : segmentation(Segmentation())
+    , evaluation_metrics(EvaluationMetrics())
+{
     // Initialize all the parameters and classes
-    segmentation = Segmentation();
-    evaluation_metrics = EvaluationMetrics();
     background_mask = Mat();
 
     this->images = images;
@@ -46,11 +54,12 @@ void Localization::localization_function() {
 
     Mat image;
 
-    std::cout << "Numero di immagini da elaborare: " << images.size() << std::endl;
+    cout << "Numero di immagini da elaborare: " << images.size() << endl;
 
     for (int j = 0; j < images.size(); j++) {
         // Initialize to default the parameters of the other classes
         // to avoid errors when processing multiple images
+
         segmentation.reset();
         evaluation_metrics.reset();
 
@@ -58,19 +67,19 @@ void Localization::localization_function() {
         image = imread(images[j]);
 
         if (image.empty()) {
-            std::cerr << "[ERROR] Could not read the input image!" << std::endl;
+            cerr << "[ERROR] Could not read the input image!" << endl;
             exit(1);
         }
 
         int num = 0;
 
-        std::cout << "Elaborazione immagine " << j + 1 << ":" << endl;
+        cout << "Elaborazione immagine " << j + 1 << ":" << endl;
 
-        // Segment the background by calling the appropriate function
-        cout << "Segmenting the background..." << endl;
-        background_mask = segmentation.backgroundSegmentationPipeline(image);
+        // Segment the field by calling the appropriate function
+        cout << "Segmenting the field..." << endl;
+        background_mask = segmentation.fieldSegmentationPipeline(image);
         cout << "Done!" << endl;
-        
+
         //create blob from image
         Mat blob = blobFromImage(image, 1.0, Size(300, 300), Scalar(127.5, 127.5, 127.5), true, false);
 
@@ -81,6 +90,7 @@ void Localization::localization_function() {
 
         //forward pass through the model to carry out the detection
         Mat output = model.forward();
+
         Mat detectionMat(output.size[2], output.size[3], CV_32F, output.ptr<float>());
 
         //immagine dove salalvo le bb e il nome per mantenere quella originale "pulita" per la segmentazione
@@ -109,33 +119,36 @@ void Localization::localization_function() {
 
         //cout << masks[j] << endl;
 
-        //cv::namedWindow("Ground Truth", WINDOW_NORMAL);
-        //cv::imshow("Ground Truth", imread(masks[j], COLOR_BGR2GRAY));
-        //cv::waitKey(0);
+        //namedWindow("Ground Truth", WINDOW_NORMAL);
+        //imshow("Ground Truth", imread(masks[j], COLOR_BGR2GRAY));
+        //waitKey(0);
 
         cout << "Adding players to the image..." << endl;
         segmentation.addPlayerClass();
         cout << "Done!" << endl;
 
-        // Compute the final images and show them by calling the appropriate function
-        segmentation.finalImage(detection_image);
-
-        //cv::namedWindow("Final segmentation", WINDOW_NORMAL);
-        //cv::imshow("Final segmentation", segmentation.segmented_image);
-        //cv::waitKey(0);s
+        //namedWindow("Final segmentation", WINDOW_NORMAL);
+        //imshow("Final segmentation", segmentation.segmented_image);
+        //waitKey(0);
 
         // Evaluate Mean Intersection Over Union by calling the appropriate function
         cout << "Computing Intersection Over Union..." << endl;
         evaluation_metrics.segmentationPipeline(masks[j], segmentation.segmented_image);
         cout << "Done!" << endl;
 
-        std::cout << "All processes completed!" << std::endl;
-        std::cout << "------------------------------" << std::endl;
-        destroyAllWindows();
-    };
+        // Compute the final images and show them by calling the appropriate function
 
+        segmentation.finalImage(detection_image);
+        destroyAllWindows();
+
+        cout << "All processes completed!" << endl;
+        cout << "------------------------------" << endl;
+    };
 }
 
+/*
+    Function ...
+*/
 void Localization::crop_function(Mat& detection_image, Mat& detectionMat, Mat& image, int num, int j) {
     //for used to evaluate all the detections
     for (int i = 0; i < detectionMat.rows; i++) {
@@ -167,7 +180,7 @@ void Localization::crop_function(Mat& detection_image, Mat& detectionMat, Mat& i
             Mat player = segmentation.playersSegmentationPipeline(image, background_mask, Rect(box_x, box_y, box_width, box_height));
 
             // Add the player to the image for the segmentation
-            BoundingBox bb = BoundingBox(box_x, box_y, box_width, box_height, 10 + i);
+            BoundingBox bb = BoundingBox(box_x, box_y, box_width, box_height, 10 + i, confidence);
             segmentation.addPlayer(player, bb);
         }
     }

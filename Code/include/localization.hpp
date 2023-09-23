@@ -28,6 +28,7 @@ class Localization
         cv::Mat background_mask;
         Localization();
         Localization(std::vector<cv::String>& images, std::vector<cv::String>& truths, std::vector<cv::String>& masks);
+        ~Localization();
         void localization_function();
         void crop_function(cv::Mat& detection_image, cv::Mat& detectionMat, cv::Mat& image, int num, int j);
 };

@@ -15,8 +15,13 @@ EvaluationMetrics::EvaluationMetrics() {
     gt_team_1 = 0;
     gt_team_2 = 0;
     gt_field = 0;
+}
 
-    players.clear();
+
+/*
+    Destructor for the class
+*/
+EvaluationMetrics::~EvaluationMetrics() {
 }
 
 /*
@@ -61,11 +66,18 @@ float EvaluationMetrics::rectangleDistance(const int a_1, const int b_1, const i
     The boxes with minimum distance between each other are found
 */
 void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
+    // Read from file
     std::ifstream bb_file;
     bb_file.open(file_name);
 
+    if (bb_file.peek() == std::ifstream::traits_type::eof()) {
+        cout << "[ERROR] Empty bounding box file!" << endl;
+        exit(1);
+    }
+
     vector<int> data;
 
+    // Save the data
     int n;
     while (bb_file >> n) {
         data.push_back(n);
@@ -73,6 +85,7 @@ void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
 
     bb_file.close();
 
+    // Parse the data
     ground_truth_size = data.size() / 5;
 
     BoundingBox bb_temp;
@@ -98,7 +111,8 @@ void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
 
                 //cout << "GT: " << p << " " << distance << " " << min_distance_value << endl;
                 if (distance < min_distance_value) {
-                    bb_temp = BoundingBox(data[i], data[i + 1], data[i + 2], data[i + 3], data[i + 4]);
+                    // Assign the new values
+                    bb_temp = BoundingBox(data[i], data[i + 1], data[i + 2], data[i + 3], data[i + 4], 1.0);
                     index = i;
                     min_distance_value = distance;
                 }
@@ -108,7 +122,14 @@ void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
 
             // cout << data.size() << " " << index << endl;
             players[p].ground_truth = bb_temp;
-            data.erase(data.begin() + index, data.begin() + index + 5);
+            cout << "Player: " << p << " bb_x: " << players[p].bounding_box.bb_x << " bb_y: " << players[p].bounding_box.bb_y << " bb_width: " << players[p].bounding_box.bb_width << " bb_height: " << players[p].bounding_box.bb_height << " has GT_x: " << players[p].ground_truth.bb_x << " GT_y: " << players[p].ground_truth.bb_y << " GT_width: " << players[p].ground_truth.bb_width << " GT_height: " << players[p].ground_truth.bb_height << endl;
+            
+            // Remove the taken values from the array
+            data[index] = 0;
+            data[index + 1] = 0;
+            data[index + 2] = 0;
+            data[index + 3] = 0;
+            data[index + 4] = 0;
         }
     }
 }
@@ -135,43 +156,55 @@ void EvaluationMetrics::reversePlayers() {
 float EvaluationMetrics::averagePrecision(const vector<float>& precision_values) {
     float sum = 0;
 
+    cout << "Precision size: " << precision_values.size() << endl;
+
+    // Sum to 11
     for (int i = 0; i < 11; i++) {
         if (i < precision_values.size()) {
-            //cout << precision_values[i] << endl;
+            cout << "Precision value " << i << " : " << precision_values[i] << endl;
             sum += precision_values[i];
         }
         else {
             sum += 0;
         }
     }
-    //cout << sum << endl;
+    cout << "Sum: " << sum << endl;
 
+    // Compute the average precision
     float average_precision = (1.0f / 11.0f) * sum;
+    cout << "Average precision: " << average_precision << endl;
     return average_precision;
 }
 
 /*
     Function that computes the precision and recall values
-    given the IOU threshold of 0.5
+    given the IOU threshold of 0.5. Note that the players
+    are already ordered by their confidence by default
 */
 void EvaluationMetrics::computePrecisionRecall() {
     cumulative_fp = 0;
     cumulative_tp = 0;
 
     for (int i = 0; i < players.size(); i++) {
+        cout << "Player: " << i << " confidence: " << players[i].bounding_box.confidence << endl;
+    }
+
+    for (int i = 0; i < players.size(); i++) {
+        // Check if player is TP or FP
         if (players[i].intersectionOverUnion(iou_threshold)) {
+            cout << "Player: " << i << " is TP" << endl;
             cumulative_tp++;
         }
         else {
+            cout << "Player: " << i << " is FP" << endl;
             cumulative_fp++;
         }
 
-        //cout << "Player: " << players[i].bounding_box.bb_x << endl;
-
+        // Compute precision and recall and save them
         players[i].precision = (float)cumulative_tp / (cumulative_tp + cumulative_fp);
         players[i].recall = (float)cumulative_tp / ground_truth_size;
 
-        //cout << "M.A.P. : " << ground_truth_size << " " << cumulative_fp << " " << cumulative_tp << " " << players[i].precision << " " << players[i].recall << endl;
+        cout << "Player: " << i << " precision: " << players[i].precision << " recall: " << players[i].recall << ", CTP:" << cumulative_tp << ", CFP" << cumulative_fp << endl;
     }
 }
 
@@ -245,7 +278,7 @@ void EvaluationMetrics::meanAveragePrecisionPipeline(const string& file_name) {
     computePrecisionRecall();
 
     // Compute the average precision for the two teams, then swap them
-    // and find if the results improve
+    // and find if the results improve. Then take the best value
     float res_1 = meanAveragePrecision(CLASS_TEAM_1);
     float res_2 = meanAveragePrecision(CLASS_TEAM_2);
 
@@ -283,9 +316,9 @@ void EvaluationMetrics::initializeSegmentationGroundTruth(const std::string& fil
     segmentation_ground_truth = imread(file_name, COLOR_BGR2GRAY);
 
     if (segmentation_ground_truth.empty()) {
-            std::cerr << "[ERROR] Could not read the segmented ground truth!" << std::endl;
-            exit(1);
-        }
+        std::cerr << "[ERROR] Could not read the segmented ground truth!" << std::endl;
+        exit(1);
+    }
 
     for (int i = 0; i < segmentation_ground_truth.rows; i++) {
         for (int j = 0; j < segmentation_ground_truth.cols; j++) {

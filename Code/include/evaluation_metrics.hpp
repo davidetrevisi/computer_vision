@@ -30,6 +30,7 @@ class EvaluationMetrics
         std::vector<Player> players;
         int cumulative_tp, cumulative_fp;
         EvaluationMetrics();
+        ~EvaluationMetrics();
         void reset();
         float rectangleDistance(const int a_1, const int b_1, const int c_1, const int d_1, const int a_2, const int b_2, const int c_2, const int d_2);
         void initializePlayersGroundTruth(const std::string& file_name = "im1_bb.txt");

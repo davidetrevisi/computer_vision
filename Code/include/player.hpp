@@ -16,6 +16,7 @@ class Player
         float intersection_over_union, precision, recall;
         Player();
         Player(BoundingBox& bb);
+        ~Player();
         bool intersectionOverUnion(const float iou_threshold);
 };
 
