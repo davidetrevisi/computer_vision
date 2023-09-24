@@ -1,3 +1,7 @@
+/*
+    Author: Biffis Nicola
+*/
+
 #ifndef LOCALIZATION_HPP
 #define LOCALIZATION_HPP
 

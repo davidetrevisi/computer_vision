@@ -1,3 +1,7 @@
+/*
+    Author: Pavan Stefano
+*/
+
 #ifndef BOUNDING_BOX_HPP
 #define BOUNDING_BOX_HPP
 

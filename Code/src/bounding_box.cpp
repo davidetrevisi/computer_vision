@@ -1,3 +1,7 @@
+/*
+    Author: Pavan Stefano
+*/
+
 #include "bounding_box.hpp"
 
 using namespace std;

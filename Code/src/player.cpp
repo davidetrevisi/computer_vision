@@ -1,3 +1,7 @@
+/*
+    Author: Trevisi Davide
+*/
+
 #include "player.hpp"
 
 using namespace std;

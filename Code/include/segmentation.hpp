@@ -1,3 +1,7 @@
+/*
+    Author: Pavan Stefano
+*/
+
 #ifndef SEGMENTATION_HPP
 #define SEGMENTATION_HPP
 

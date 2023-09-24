@@ -1,3 +1,7 @@
+/*
+    Author: Trevisi Davide
+*/
+
 #include "evaluation_metrics.hpp"
 
 using namespace std;
@@ -51,8 +55,8 @@ float EvaluationMetrics::rectangleDistance(const int a_1, const int b_1, const i
     float center_2_x = (float)(a_2 + c_2) / 2.0f;
     float center_2_y = (float)(b_2 + d_2) / 2.0f;
 
-    float distance_x = std::abs(center_1_x - center_2_x);
-    float distance_y = std::abs(center_1_y - center_2_y);
+    float distance_x = abs(center_1_x - center_2_x);
+    float distance_y = abs(center_1_y - center_2_y);
 
     float distance = sqrtf(distance_x * distance_x + distance_y * distance_y);
 
@@ -66,10 +70,10 @@ float EvaluationMetrics::rectangleDistance(const int a_1, const int b_1, const i
 */
 void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
     // Read from file
-    std::ifstream bb_file;
+    ifstream bb_file;
     bb_file.open(file_name);
 
-    if (bb_file.peek() == std::ifstream::traits_type::eof()) {
+    if (bb_file.peek() == ifstream::traits_type::eof()) {
         cout << "[ERROR] Empty bounding box file!" << endl;
         exit(1);
     }
@@ -121,7 +125,7 @@ void EvaluationMetrics::initializePlayersGroundTruth(const string& file_name) {
 
             // cout << data.size() << " " << index << endl;
             players[p].ground_truth = bb_temp;
-            cout << "Player: " << p << " bb_x: " << players[p].bounding_box.bb_x << " bb_y: " << players[p].bounding_box.bb_y << " bb_width: " << players[p].bounding_box.bb_width << " bb_height: " << players[p].bounding_box.bb_height << " has GT_x: " << players[p].ground_truth.bb_x << " GT_y: " << players[p].ground_truth.bb_y << " GT_width: " << players[p].ground_truth.bb_width << " GT_height: " << players[p].ground_truth.bb_height << endl;
+            //cout << "Player: " << p << " bb_x: " << players[p].bounding_box.bb_x << " bb_y: " << players[p].bounding_box.bb_y << " bb_width: " << players[p].bounding_box.bb_width << " bb_height: " << players[p].bounding_box.bb_height << " has GT_x: " << players[p].ground_truth.bb_x << " GT_y: " << players[p].ground_truth.bb_y << " GT_width: " << players[p].ground_truth.bb_width << " GT_height: " << players[p].ground_truth.bb_height << endl;
 
             // Remove the taken values from the array
             data[index] = 0;
@@ -155,23 +159,23 @@ void EvaluationMetrics::reversePlayers() {
 float EvaluationMetrics::averagePrecision(const vector<float>& precision_values) {
     float sum = 0;
 
-    cout << "Precision size: " << precision_values.size() << endl;
+    //cout << "Precision size: " << precision_values.size() << endl;
 
     // Sum to 11
     for (int i = 0; i < 11; i++) {
         if (i < precision_values.size()) {
-            cout << "Precision value " << i << " : " << precision_values[i] << endl;
+            //cout << "Precision value " << i << " : " << precision_values[i] << endl;
             sum += precision_values[i];
         }
         else {
             sum += 0;
         }
     }
-    cout << "Sum: " << sum << endl;
+    //cout << "Sum: " << sum << endl;
 
     // Compute the average precision
     float average_precision = (1.0f / 11.0f) * sum;
-    cout << "Average precision: " << average_precision << endl;
+    //cout << "Average precision: " << average_precision << endl;
     return average_precision;
 }
 
@@ -184,18 +188,18 @@ void EvaluationMetrics::computePrecisionRecall() {
     cumulative_fp = 0;
     cumulative_tp = 0;
 
-    for (int i = 0; i < players.size(); i++) {
+    /*for (int i = 0; i < players.size(); i++) {
         cout << "Player: " << i << " confidence: " << players[i].bounding_box.confidence << endl;
-    }
+    }*/
 
     for (int i = 0; i < players.size(); i++) {
         // Check if player is TP or FP
         if (players[i].intersectionOverUnion(iou_threshold)) {
-            cout << "Player: " << i << " is TP" << endl;
+            //cout << "Player: " << i << " is TP" << endl;
             cumulative_tp++;
         }
         else {
-            cout << "Player: " << i << " is FP" << endl;
+            //cout << "Player: " << i << " is FP" << endl;
             cumulative_fp++;
         }
 
@@ -203,7 +207,7 @@ void EvaluationMetrics::computePrecisionRecall() {
         players[i].precision = (float)cumulative_tp / (cumulative_tp + cumulative_fp);
         players[i].recall = (float)cumulative_tp / ground_truth_size;
 
-        cout << "Player: " << i << " precision: " << players[i].precision << " recall: " << players[i].recall << ", CTP:" << cumulative_tp << ", CFP" << cumulative_fp << endl;
+        //cout << "Player: " << i << " precision: " << players[i].precision << " recall: " << players[i].recall << ", CTP:" << cumulative_tp << ", CFP" << cumulative_fp << endl;
     }
 }
 
@@ -282,9 +286,9 @@ void EvaluationMetrics::meanAveragePrecisionPipeline(const string& file_name) {
     float res_2 = meanAveragePrecision(CLASS_TEAM_2);
 
     float mean_average_precision = (1.0f / 2.0f) * (res_1 + res_2);
-    cout << "Average precision team 1: " << res_1 << endl;
+    /*cout << "Average precision team 1: " << res_1 << endl;
     cout << "Average precision team 2: " << res_2 << endl;
-    cout << "Mean average precision: " << mean_average_precision << endl;
+    cout << "Mean average precision: " << mean_average_precision << endl;*/
 
     reversePlayers();
 
@@ -292,18 +296,18 @@ void EvaluationMetrics::meanAveragePrecisionPipeline(const string& file_name) {
     res_2 = meanAveragePrecision(CLASS_TEAM_2);
 
     float mean_average_precision_reverse = (1.0f / 2.0f) * (res_1 + res_2);
-    cout << "Reversing teams..." << endl;
+    /*cout << "Reversing teams..." << endl;
     cout << "Average precision team 1: " << res_1 << endl;
     cout << "Average precision team 2: " << res_2 << endl;
-    cout << "Mean average precision: " << mean_average_precision_reverse << endl;
+    cout << "Mean average precision: " << mean_average_precision_reverse << endl;*/
 
     // Print the final result
     if (mean_average_precision > mean_average_precision_reverse) {
-        std::cout << "Final mean average precision: " << mean_average_precision << std::endl;
+        cout << "Mean average precision: " << mean_average_precision << endl;
         reversePlayers();
     }
     else {
-        std::cout << "Final mean average precision: " << mean_average_precision_reverse << std::endl;
+        cout << "Mean average precision: " << mean_average_precision_reverse << endl;
     }
 }
 
@@ -311,11 +315,11 @@ void EvaluationMetrics::meanAveragePrecisionPipeline(const string& file_name) {
     Function that initializes the segmentation ground truth by
     reading the file and counting the pixels
 */
-void EvaluationMetrics::initializeSegmentationGroundTruth(const std::string& file_name) {
+void EvaluationMetrics::initializeSegmentationGroundTruth(const string& file_name) {
     segmentation_ground_truth = imread(file_name, COLOR_BGR2GRAY);
 
     if (segmentation_ground_truth.empty()) {
-        std::cerr << "[ERROR] Could not read the segmented ground truth!" << std::endl;
+        cerr << "[ERROR] Could not read the segmented ground truth!" << endl;
         exit(1);
     }
 
@@ -429,25 +433,25 @@ float EvaluationMetrics::intersectionOverUnion(const Mat& mask) {
     Function that executes the whole pipeline for the
     Mean IOU result
 */
-void EvaluationMetrics::segmentationPipeline(const std::string& file_name, cv::Mat& segmented_image) {
+void EvaluationMetrics::segmentationPipeline(const string& file_name, Mat& segmented_image) {
     initializeSegmentationGroundTruth(file_name);
 
     // Compute the IOU
     float res_1_iou = intersectionOverUnion(segmented_image);
-    std::cout << "Intersection Over Union first try: " << res_1_iou << std::endl;
+    //cout << "Intersection Over Union first try: " << res_1_iou << endl;
 
     // Switch the classes
     reverseSegmentation(segmented_image);
 
     // Compute the IOU again and choose the best one
     float res_2_iou = intersectionOverUnion(segmented_image);
-    std::cout << "Intersection Over Union swapped: " << res_2_iou << std::endl;
+    //cout << "Intersection Over Union swapped: " << res_2_iou << endl;
 
     if (res_1_iou > res_2_iou) {
-        std::cout << "Final Intersection Over Union: " << res_1_iou << std::endl;
+        cout << "Mean Intersection Over Union: " << res_1_iou << endl;
         reverseSegmentation(segmented_image);
     }
     else {
-        std::cout << "Final Intersection Over Union: " << res_2_iou << std::endl;
+        cout << "Mean Intersection Over Union: " << res_2_iou << endl;
     }
 }

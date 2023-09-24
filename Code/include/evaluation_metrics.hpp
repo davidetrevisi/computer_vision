@@ -1,3 +1,7 @@
+/*
+    Author: Trevisi Davide
+*/
+
 #ifndef EVALUATION_METRICS_HPP
 #define EVALUATION_METRICS_HPP
 

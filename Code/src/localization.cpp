@@ -1,3 +1,7 @@
+/*
+    Author: Biffis Nicola
+*/
+
 #include "localization.hpp"
 
 using namespace std;
@@ -54,9 +58,9 @@ void Localization::localization_function() {
 
     Mat image;
 
-    cout << "Numero di immagini da elaborare: " << images.size() << endl;
+    cout << "Number of images: " << images.size() << endl;
 
-    for (int j = 3; j < images.size(); j++) {
+    for (int j = 0; j < images.size(); j++) {
         // Initialize to default the parameters of the other classes
         // to avoid errors when processing multiple images
 
@@ -73,7 +77,7 @@ void Localization::localization_function() {
 
         int num = 0;
 
-        cout << "Elaborazione immagine " << j + 1 << ":" << endl;
+        cout << "Working on image " << j + 1 << ":" << endl;
 
         // Segment the field by calling the appropriate function
         cout << "Segmenting the field..." << endl;
@@ -147,7 +151,7 @@ void Localization::localization_function() {
 }
 
 /*
-    Function ...
+    Function that processes each player
 */
 void Localization::crop_function(Mat& detection_image, Mat& detectionMat, Mat& image, int num, int j) {
     //for used to evaluate all the detections

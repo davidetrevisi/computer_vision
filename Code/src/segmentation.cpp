@@ -1,3 +1,7 @@
+/*
+    Author: Pavan Stefano
+*/
+
 #include "segmentation.hpp"
 
 using namespace cv;
@@ -44,7 +48,7 @@ Mat3b Segmentation::quantize(Mat3b& image, const int K) {
     // Run KMeans
     vector<int> labels;
     Mat1f colors;
-    kmeans(data, K, labels, cv::TermCriteria(), 1, cv::KMEANS_PP_CENTERS, colors);
+    kmeans(data, K, labels, TermCriteria(), 1, KMEANS_PP_CENTERS, colors);
 
     for (int i = 0; i < area; ++i)
     {
@@ -58,8 +62,8 @@ Mat3b Segmentation::quantize(Mat3b& image, const int K) {
     Mat reduced = data.reshape(3, image.rows);
     reduced.convertTo(dst, CV_8U);
 
-    //cv::imshow("Quantized", dst);
-    //cv::waitKey(0);
+    //imshow("Quantized", dst);
+    //waitKey(0);
 
     return dst;
 }
@@ -68,7 +72,7 @@ Mat3b Segmentation::quantize(Mat3b& image, const int K) {
     Function that counts the occurrencies of the colors
     in the image
 */
-void Segmentation::getColors(cv::Mat3b& image) {
+void Segmentation::getColors(Mat3b& image) {
     for (int r = 0; r < image.rows; ++r)
     {
         for (int c = 0; c < image.cols; ++c)
@@ -95,10 +99,10 @@ void Segmentation::getColors(cv::Mat3b& image) {
 /*
     Function that sorts the colors in 'pixels' by number of occurrencies
 */
-std::vector<std::pair<Vec3b, int>> Segmentation::sortByCount() {
-    std::vector<std::pair<Vec3b, int>> pairs(pixels.begin(), pixels.end());
+vector<pair<Vec3b, int>> Segmentation::sortByCount() {
+    vector<pair<Vec3b, int>> pairs(pixels.begin(), pixels.end());
 
-    std::sort(pairs.begin(), pairs.end(), [](std::pair<cv::Vec3b, int>& first, std::pair<cv::Vec3b, int>& second) {
+    sort(pairs.begin(), pairs.end(), [](pair<Vec3b, int>& first, pair<Vec3b, int>& second) {
         return first.second > second.second;
         });
 
@@ -108,10 +112,10 @@ std::vector<std::pair<Vec3b, int>> Segmentation::sortByCount() {
 /*
     Function that selects the most present color(s) in the image and returns it(them)
 */
-std::vector<Vec3b> Segmentation::colorChoice() {
+vector<Vec3b> Segmentation::colorChoice() {
     // Sort the colors
-    std::vector<std::pair<Vec3b, int>> colors = sortByCount();
-    std::vector<Vec3b> output;
+    vector<pair<Vec3b, int>> colors = sortByCount();
+    vector<Vec3b> output;
 
     // If the main color is black, erase it because the segmented images have black backgrounds
     if (colors[0].first[0] < 20 && colors[0].first[1] < 20 && colors[0].first[2] < 20) {
@@ -142,7 +146,7 @@ std::vector<Vec3b> Segmentation::colorChoice() {
     Function that sets the pixels in the field mask
     to the appropriate class
 */
-Mat Segmentation::fieldMask(cv::Mat3b& image) {
+Mat Segmentation::fieldMask(Mat3b& image) {
     getColors(image);
     vector<Vec3b> bg_colors = colorChoice();
     Mat field(image.rows, image.cols, CV_8U, Scalar(0));
@@ -164,7 +168,7 @@ Mat Segmentation::fieldMask(cv::Mat3b& image) {
     Function that executes the whole pipeline for the
     field segmentation
 */
-cv::Mat Segmentation::fieldSegmentationPipeline(cv::Mat& image) {
+Mat Segmentation::fieldSegmentationPipeline(Mat& image) {
     segmented_image = Mat(image.size(), CV_8U, Scalar(0));
 
     Mat3b input = image.clone();
@@ -180,31 +184,31 @@ cv::Mat Segmentation::fieldSegmentationPipeline(cv::Mat& image) {
 /*
     Function that segments the players using the GrabCut algorithm
 */
-cv::Mat Segmentation::playerSegmentation(cv::Mat& image, cv::Rect r) {
+Mat Segmentation::playerSegmentation(Mat& image, Rect r) {
     // Perform GrabCut segmentation
-    cv::Mat mask(image.size(), CV_8UC1);
-    cv::Mat bg, fg;
-    cv::Mat result(image.size(), CV_8UC3);
-    cv::grabCut(image, mask, r, bg, fg, 10, cv::GC_INIT_WITH_RECT);
+    Mat mask(image.size(), CV_8UC1);
+    Mat bg, fg;
+    Mat result(image.size(), CV_8UC3);
+    grabCut(image, mask, r, bg, fg, 10, GC_INIT_WITH_RECT);
 
     // Draw the segmentation
     for (int row = 0; row < image.rows; row++) {
         for (int col = 0; col < image.cols; col++) {
             if ((int)mask.at<uchar>(row, col) == 2)        //BACKGROUND
             {
-                result.at<cv::Vec3b>(row, col) = Vec3b(0, 0, 0);
+                result.at<Vec3b>(row, col) = Vec3b(0, 0, 0);
             }
             else if ((int)mask.at<uchar>(row, col) == 3)        //FOREGROUND
             {
-                result.at<cv::Vec3b>(row, col) = image.at<Vec3b>(row, col);
+                result.at<Vec3b>(row, col) = image.at<Vec3b>(row, col);
             }
         }
     }
 
     Mat cropped_image = result(r);
 
-    //cv::imshow("Segmented Image", cropped_image);
-    //cv::waitKey(0);
+    //imshow("Segmented Image", cropped_image);
+    //waitKey(0);
 
     return cropped_image;
 }
@@ -212,7 +216,7 @@ cv::Mat Segmentation::playerSegmentation(cv::Mat& image, cv::Rect r) {
 /*
     Function that removes the field found before from the segmented player image
 */
-cv::Mat Segmentation::removeBackground(cv::Mat& player, cv::Mat& background) {
+Mat Segmentation::removeBackground(Mat& player, Mat& background) {
     Mat output = player.clone();
 
     for (int i = 0; i < output.rows; i++) {
@@ -223,8 +227,8 @@ cv::Mat Segmentation::removeBackground(cv::Mat& player, cv::Mat& background) {
         }
     }
 
-    //cv::imshow("Final player", output);
-    //cv::waitKey(0);
+    //imshow("Final player", output);
+    //waitKey(0);
 
     return output;
 }
@@ -233,7 +237,7 @@ cv::Mat Segmentation::removeBackground(cv::Mat& player, cv::Mat& background) {
     Function that executes the whole pipeline for the
     player segmentation
 */
-cv::Mat Segmentation::playersSegmentationPipeline(cv::Mat& image, cv::Mat& background, cv::Rect bb) {
+Mat Segmentation::playersSegmentationPipeline(Mat& image, Mat& background, Rect bb) {
     Mat cropped_background = background(bb);
     Mat player = playerSegmentation(image, bb);
 
@@ -246,7 +250,7 @@ cv::Mat Segmentation::playersSegmentationPipeline(cv::Mat& image, cv::Mat& backg
     Function that paints the pixels with the segmented player to
     their corresponding color in the segmented image
 */
-void Segmentation::addSegmentedPlayer(cv::Mat& image, BoundingBox& bb) {
+void Segmentation::addSegmentedPlayer(Mat& image, BoundingBox& bb) {
     for (int i = 0; i < image.rows; i++) {
         for (int j = 0; j < image.cols; j++) {
             if (image.at<Vec3b>(i, j) != Vec3b(0, 0, 0)) {
@@ -255,9 +259,9 @@ void Segmentation::addSegmentedPlayer(cv::Mat& image, BoundingBox& bb) {
         }
     }
 
-    //cv::namedWindow("Seg", WINDOW_NORMAL);
-    //cv::imshow("Seg", segmented_image);
-    //cv::waitKey(0);
+    //namedWindow("Seg", WINDOW_NORMAL);
+    //imshow("Seg", segmented_image);
+    //waitKey(0);
 }
 
 /*
@@ -270,10 +274,10 @@ void Segmentation::addPlayerClass() {
         // Crop the image
         Mat cropped = segmented_image(Rect(player_colors[p].first.bb_x, player_colors[p].first.bb_y, player_colors[p].first.bb_width, player_colors[p].first.bb_height));
 
-        cv::imshow("Cropped", cropped);
-        cv::waitKey(0);
+        //imshow("Cropped", cropped);
+        //waitKey(0);
 
-        cout << "P: " << p << " size:" << player_colors.size() << endl;
+        //cout << "P: " << p << " size:" << player_colors.size() << endl;
 
         // Assign the corresponding color
         if (player_colors[p].first.bb_teamid == CLASS_TEAM_1) {
@@ -295,22 +299,22 @@ void Segmentation::addPlayerClass() {
             }
         }
     }
-    //cv::namedWindow("Seg", WINDOW_NORMAL);
-    cv::imshow("Seg", segmented_image);
-    cv::waitKey(0);
+    //namedWindow("Seg", WINDOW_NORMAL);
+    //imshow("Seg", segmented_image);
+    //waitKey(0);
 }
 
 /*
     Function that executes all the actions required to add
     a player to the segmented image
 */
-void Segmentation::addPlayer(cv::Mat& image, BoundingBox& bb) {
+void Segmentation::addPlayer(Mat& image, BoundingBox& bb) {
     Mat3b input = image.clone();
     Mat3b reduced = quantize(input, KMEANS_PLAYERS);
 
-    //cv::namedWindow("Input", WINDOW_NORMAL);
-    //cv::imshow("Input", image);
-    //cv::waitKey(0);
+    //namedWindow("Input", WINDOW_NORMAL);
+    //imshow("Input", image);
+    //waitKey(0);
 
     getColors(reduced);
     vector<Vec3b> team_colors = colorChoice();
@@ -343,7 +347,7 @@ void Segmentation::teamId(const int index) {
             }
             player_colors[i].first.bb_teamid = CLASS_TEAM_2;
         }
-        cout << "Player " << i << " has color: " << player_colors[i].second << " and team: " << player_colors[i].first.bb_teamid << endl;
+        //cout << "Player " << i << " has color: " << player_colors[i].second << " and team: " << player_colors[i].first.bb_teamid << endl;
     }
 
     // Performs the same process again to make sure that
@@ -357,7 +361,7 @@ void Segmentation::teamId(const int index) {
                 player_colors[i].first.bb_teamid = 3;
             }
         }
-        cout << "Player " << i << " has color: " << player_colors[i].second << " and team: " << player_colors[i].first.bb_teamid << endl;
+        //cout << "Player " << i << " has color: " << player_colors[i].second << " and team: " << player_colors[i].first.bb_teamid << endl;
     }
 }
 
@@ -365,7 +369,7 @@ void Segmentation::teamId(const int index) {
     Function that adds the segmented field to the
     segmented image
 */
-void Segmentation::addFieldClass(cv::Mat& image) {
+void Segmentation::addFieldClass(Mat& image) {
     for (int i = 0; i < segmented_image.rows; i++) {
         for (int j = 0; j < segmented_image.cols; j++) {
             if (image.at<uchar>(i, j) != 0) {
@@ -374,18 +378,18 @@ void Segmentation::addFieldClass(cv::Mat& image) {
         }
     }
 
-    //cv::namedWindow("Seg", WINDOW_NORMAL);
-    //cv::imshow("Seg", segmented_image);
-    //cv::waitKey(0);
+    //namedWindow("Seg", WINDOW_NORMAL);
+    //imshow("Seg", segmented_image);
+    //waitKey(0);
 }
 
 /*
     Function that computes the final images to show the user
 */
-void Segmentation::finalImage(cv::Mat& bb_image) {
-    cv::Mat background;
+void Segmentation::finalImage(Mat& bb_image) {
+    Mat background;
 
-    cv::cvtColor(bb_image, background, COLOR_BGR2BGRA);
+    cvtColor(bb_image, background, COLOR_BGR2BGRA);
 
     // Make sure all the pixels are assigned, otherwise assign them the background value
     for (int i = 0; i < segmented_image.rows; i++) {
@@ -396,13 +400,13 @@ void Segmentation::finalImage(cv::Mat& bb_image) {
         }
     }
 
-    //cv::namedWindow("Final segmentation", WINDOW_NORMAL);
-    //cv::imshow("Final segmentation", segmented_image);
-    //cv::waitKey(0);
+    //namedWindow("Final segmentation", WINDOW_NORMAL);
+    //imshow("Final segmentation", segmented_image);
+    //waitKey(0);
 
     // Compute and show the segmented image with colors
-    cv::Mat finale(segmented_image.size(), CV_8UC4);
-    cv::Mat bgr_segmentation(segmented_image.size(), CV_8UC4);
+    Mat finale(segmented_image.size(), CV_8UC4);
+    Mat bgr_segmentation(segmented_image.size(), CV_8UC4);
 
     for (int i = 0; i < segmented_image.rows; i++) {
         for (int j = 0; j < segmented_image.cols; j++) {
@@ -421,19 +425,19 @@ void Segmentation::finalImage(cv::Mat& bb_image) {
         }
     }
 
-    cv::namedWindow("Coloured segmented image");
-    cv::imshow("Coloured segmented image", bgr_segmentation);
-    cv::waitKey(0);
+    namedWindow("Coloured segmented image");
+    imshow("Coloured segmented image", bgr_segmentation);
+    waitKey(0);
 
     // Compute and show the final image made of the image
     // with the bounding boxes drawn and the previous one merged
     // with weights and using transparency
     addWeighted(background, 0.7, bgr_segmentation, 0.5, 0, finale);
 
-    cv::Mat final_image;
-    cv::cvtColor(finale, final_image, COLOR_BGRA2BGR);
+    Mat final_image;
+    cvtColor(finale, final_image, COLOR_BGRA2BGR);
 
-    cv::namedWindow("Program output");
-    cv::imshow("Program output", final_image);
-    cv::waitKey(0);
+    namedWindow("Program output");
+    imshow("Program output", final_image);
+    waitKey(0);
 }
